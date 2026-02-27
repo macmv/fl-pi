@@ -19,7 +19,11 @@ rustflags = [
 ]
 
 [build]
-target = "thumbv6m-none-eabi"
+# For the Pi
+# target = "thumbv6m-none-eabi"
+
+# For the STM32F4
+target = "thumbv7em-none-eabihf"
 
 [env]
 DEFMT_LOG = "debug"

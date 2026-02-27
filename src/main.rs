@@ -14,10 +14,11 @@ use panic_probe as _;
 // Provide an alias for our BSP so we can switch targets quickly.
 // Uncomment the BSP you included in Cargo.toml, the rest of the code does not
 // need to change.
-use rp_pico as bsp;
+use stm32f4xx_hal as bsp;
+// use rp_pico as bsp;
 // use sparkfun_pro_micro_rp2040 as bsp;
 
-use bsp::hal::{
+use bsp::{
   clocks::{Clock, init_clocks_and_plls},
   pac,
   sio::Sio,
