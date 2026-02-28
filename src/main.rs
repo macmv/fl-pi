@@ -30,12 +30,12 @@ fn main() -> ! {
 
   loop {
     info!("on!");
-    for _ in 0..10_000 {
+    for _ in 0..5_000_000 {
       led.set_high();
     }
 
     info!("off!");
-    for _ in 0..10_000 {
+    for _ in 0..5_000_000 {
       led.set_low();
     }
   }
