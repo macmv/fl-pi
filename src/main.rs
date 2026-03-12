@@ -18,6 +18,7 @@ use fl_sim::{
 
 use defmt::info;
 
+mod imu;
 mod led;
 
 const WORLD_WIDTH: usize = 8;
@@ -36,7 +37,10 @@ use hal::{gpio::GpioExt, pac, rcc::RccExt};
 
 use embedded_alloc::LlffHeap as Heap;
 
-use crate::led::{LedStrip, Pixel};
+use crate::{
+  imu::Imu,
+  led::{LedStrip, Pixel},
+};
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
@@ -73,7 +77,9 @@ fn main() -> ! {
   let mut rcc = p.RCC.freeze(hal::rcc::Config::hsi().sysclk(84.MHz()));
 
   let gpioa = p.GPIOA.split(&mut rcc);
+  let gpiob = p.GPIOB.split(&mut rcc);
 
+  let mut imu = Imu::new(p.I2C1, gpiob.pb8, gpiob.pb9, &mut rcc).unwrap();
   let mut leds = LedStrip::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
 
   const LEN: usize = 144;
@@ -101,6 +107,8 @@ fn main() -> ! {
     let delta = new_cycle.wrapping_sub(cycle);
     defmt::info!("tick end, delta: {}", delta);
     cycle = new_cycle;
+
+    defmt::info!("accel: {:?}", imu.read_accel());
 
     for it in density.iter_mut().flatten() {
       *it = 0.0;
