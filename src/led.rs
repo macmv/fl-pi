@@ -5,7 +5,7 @@ use stm32f4xx_hal::{
 
 use crate::hal::pac;
 
-const PIXEL_COUNT: usize = 50;
+const PIXEL_COUNT: usize = 144;
 const FRAME_BITS: usize = 24 * PIXEL_COUNT;
 const RESET_SLOTS: usize = 64;
 const DMA_WORDS: usize = FRAME_BITS + RESET_SLOTS;
@@ -21,7 +21,7 @@ pub struct Pixel {
   pub b: u8,
 }
 
-pub struct LedStrip<const N: usize> {
+pub struct LedStrip {
   _phantom: core::marker::PhantomData<()>,
 }
 
@@ -29,7 +29,7 @@ impl Pixel {
   pub const BLACK: Pixel = Pixel { r: 0, g: 0, b: 0 };
 }
 
-impl<const N: usize> LedStrip<N> {
+impl LedStrip {
   pub fn new(rcc: &mut pac::RCC, pin: Pin<'A', 0>, timer: &pac::TIM2, dma: &pac::DMA1) -> Self {
     let _ = pin.into_alternate::<1>();
 

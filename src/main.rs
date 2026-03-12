@@ -67,9 +67,9 @@ fn main() -> ! {
 
   let gpioa = p.GPIOA.split(&mut rcc);
 
-  let mut leds = LedStrip::<50>::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
+  let mut leds = LedStrip::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
 
-  const LEN: usize = 30;
+  const LEN: usize = 144;
   const PIX: Pixel = Pixel { r: 0, g: 0, b: 8 };
 
   loop {
@@ -79,7 +79,7 @@ fn main() -> ! {
       }
       leds.set(i, PIX);
 
-      delay(1000000);
+      delay(500000);
     }
 
     for i in (0..LEN).rev() {
@@ -88,7 +88,7 @@ fn main() -> ! {
       }
       leds.set(i, PIX);
 
-      delay(1000000);
+      delay(500000);
     }
 
     cortex_m::asm::nop();
