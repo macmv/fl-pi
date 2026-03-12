@@ -1,4 +1,7 @@
-use stm32f4xx_hal::rcc::{Enable, Reset};
+use stm32f4xx_hal::{
+  gpio::Pin,
+  rcc::{Enable, Reset},
+};
 
 use crate::hal::pac;
 
@@ -12,11 +15,13 @@ const DUTY_1: u32 = (ARR + 1) * 2 / 3;
 static mut WS_BITS: [u32; DMA_WORDS] = [0; _];
 
 pub struct LedStrip<const N: usize> {
-  buffer: [u32; 24],
+  buffer: [u32; N],
 }
 
 impl<const N: usize> LedStrip<N> {
-  pub fn new(rcc: &mut pac::RCC, timer: &pac::TIM2, dma: &pac::DMA1) -> Self {
+  pub fn new(rcc: &mut pac::RCC, pin: Pin<'A', 0>, timer: &pac::TIM2, dma: &pac::DMA1) -> Self {
+    let _ = pin.into_alternate::<1>();
+
     pac::TIM2::enable(rcc);
     pac::TIM2::reset(rcc);
     pac::DMA1::enable(rcc);

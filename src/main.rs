@@ -32,11 +32,7 @@ use stm32f4xx_hal as hal;
 // use rp_pico as bsp;
 // use sparkfun_pro_micro_rp2040 as bsp;
 
-use hal::{
-  gpio::GpioExt,
-  pac,
-  rcc::{Enable, RccExt, Reset},
-};
+use hal::{gpio::GpioExt, pac, rcc::RccExt};
 
 use embedded_alloc::LlffHeap as Heap;
 
@@ -69,9 +65,8 @@ fn main() -> ! {
   let mut rcc = p.RCC.freeze(hal::rcc::Config::hsi().sysclk(84.MHz()));
 
   let gpioa = p.GPIOA.split(&mut rcc);
-  let _neopixel = gpioa.pa0.into_alternate::<1>();
 
-  let _leds = LedStrip::<50>::new(&mut rcc, &p.TIM2, &p.DMA1);
+  let _leds = LedStrip::<50>::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
 
   loop {
     cortex_m::asm::nop();
