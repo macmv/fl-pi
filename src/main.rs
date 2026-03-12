@@ -16,6 +16,10 @@ use fl_sim::{
   nalgebra::{self, point, vector},
 };
 
+use defmt::info;
+
+mod led;
+
 const WORLD_WIDTH: usize = 8;
 const WORLD_HEIGHT: usize = 8;
 const PARTICLES: usize = 128;
@@ -28,9 +32,15 @@ use stm32f4xx_hal as hal;
 // use rp_pico as bsp;
 // use sparkfun_pro_micro_rp2040 as bsp;
 
-use hal::{gpio::GpioExt, pac, rcc::RccExt};
+use hal::{
+  gpio::GpioExt,
+  pac,
+  rcc::{Enable, RccExt, Reset},
+};
 
 use embedded_alloc::LlffHeap as Heap;
+
+use crate::led::LedStrip;
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
@@ -55,6 +65,20 @@ extern crate alloc;
 
 #[entry]
 fn main() -> ! {
+  let p = pac::Peripherals::take().unwrap();
+  let mut rcc = p.RCC.freeze(hal::rcc::Config::hsi().sysclk(84.MHz()));
+
+  let gpioa = p.GPIOA.split(&mut rcc);
+  let _neopixel = gpioa.pa0.into_alternate::<1>();
+
+  let _leds = LedStrip::<50>::new(&mut rcc, &p.TIM2, &p.DMA1);
+
+  loop {
+    cortex_m::asm::nop();
+  }
+}
+
+fn main_2() -> ! {
   unsafe {
     embedded_alloc::init!(HEAP, 1024 * 32);
   }
