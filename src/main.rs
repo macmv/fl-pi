@@ -98,7 +98,7 @@ fn main() -> ! {
     sim.tick();
 
     let new_cycle = cortex_m::peripheral::DWT::cycle_count();
-    let delta = new_cycle - cycle;
+    let delta = new_cycle.wrapping_sub(cycle);
     defmt::info!("tick end, delta: {}", delta);
     cycle = new_cycle;
 
