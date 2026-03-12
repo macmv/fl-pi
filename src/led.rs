@@ -5,7 +5,8 @@ use stm32f4xx_hal::{
 
 use crate::hal::pac;
 
-const FRAME_BITS: usize = 24 * 50;
+const PIXEL_COUNT: usize = 50;
+const FRAME_BITS: usize = 24 * PIXEL_COUNT;
 const RESET_SLOTS: usize = 64;
 const DMA_WORDS: usize = FRAME_BITS + RESET_SLOTS;
 const ARR: u32 = 104;
@@ -14,8 +15,18 @@ const DUTY_1: u32 = (ARR + 1) * 2 / 3;
 
 static mut WS_BITS: [u32; DMA_WORDS] = [0; _];
 
+pub struct Pixel {
+  pub r: u8,
+  pub g: u8,
+  pub b: u8,
+}
+
 pub struct LedStrip<const N: usize> {
-  buffer: [u32; N],
+  _phantom: core::marker::PhantomData<()>,
+}
+
+impl Pixel {
+  pub const BLACK: Pixel = Pixel { r: 0, g: 0, b: 0 };
 }
 
 impl<const N: usize> LedStrip<N> {
@@ -78,6 +89,19 @@ impl<const N: usize> LedStrip<N> {
         .set_bit()
     });
 
-    LedStrip { buffer: [0; _] }
+    LedStrip { _phantom: core::marker::PhantomData }
+  }
+
+  pub fn set(&mut self, i: usize, pixel: Pixel) {
+    if i >= PIXEL_COUNT {
+      return;
+    }
+
+    let bits = (u32::from(pixel.g) << 16) | (u32::from(pixel.r) << 8) | u32::from(pixel.b);
+    unsafe {
+      for j in 0..24 {
+        WS_BITS[i * 24 + j] = if bits & (1 << 23 >> j) == 0 { DUTY_0 } else { DUTY_1 };
+      }
+    }
   }
 }

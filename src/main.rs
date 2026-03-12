@@ -5,6 +5,7 @@
 #![no_std]
 #![no_main]
 
+use cortex_m::asm::delay;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use panic_probe as _;
@@ -36,7 +37,7 @@ use hal::{gpio::GpioExt, pac, rcc::RccExt};
 
 use embedded_alloc::LlffHeap as Heap;
 
-use crate::led::LedStrip;
+use crate::led::{LedStrip, Pixel};
 
 #[global_allocator]
 static HEAP: Heap = Heap::empty();
@@ -66,9 +67,30 @@ fn main() -> ! {
 
   let gpioa = p.GPIOA.split(&mut rcc);
 
-  let _leds = LedStrip::<50>::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
+  let mut leds = LedStrip::<50>::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
+
+  const LEN: usize = 30;
+  const PIX: Pixel = Pixel { r: 0, g: 0, b: 8 };
 
   loop {
+    for i in 0..LEN {
+      for i in 0..LEN {
+        leds.set(i, Pixel::BLACK);
+      }
+      leds.set(i, PIX);
+
+      delay(1000000);
+    }
+
+    for i in (0..LEN).rev() {
+      for i in 0..LEN {
+        leds.set(i, Pixel::BLACK);
+      }
+      leds.set(i, PIX);
+
+      delay(1000000);
+    }
+
     cortex_m::asm::nop();
   }
 }
