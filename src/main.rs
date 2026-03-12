@@ -5,7 +5,6 @@
 #![no_std]
 #![no_main]
 
-use cortex_m::asm::delay;
 use cortex_m_rt::entry;
 use defmt_rtt as _;
 use panic_probe as _;
@@ -62,40 +61,6 @@ extern crate alloc;
 
 #[entry]
 fn main() -> ! {
-  let p = pac::Peripherals::take().unwrap();
-  let mut rcc = p.RCC.freeze(hal::rcc::Config::hsi().sysclk(84.MHz()));
-
-  let gpioa = p.GPIOA.split(&mut rcc);
-
-  let mut leds = LedStrip::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
-
-  const LEN: usize = 144;
-  const PIX: Pixel = Pixel { r: 0, g: 0, b: 8 };
-
-  loop {
-    for i in 0..LEN {
-      for i in 0..LEN {
-        leds.set(i, Pixel::BLACK);
-      }
-      leds.set(i, PIX);
-
-      delay(500000);
-    }
-
-    for i in (0..LEN).rev() {
-      for i in 0..LEN {
-        leds.set(i, Pixel::BLACK);
-      }
-      leds.set(i, PIX);
-
-      delay(500000);
-    }
-
-    cortex_m::asm::nop();
-  }
-}
-
-fn main_2() -> ! {
   unsafe {
     embedded_alloc::init!(HEAP, 1024 * 32);
   }
@@ -105,11 +70,14 @@ fn main_2() -> ! {
   c.DCB.enable_trace();
   c.DWT.set_cycle_count(0);
   c.DWT.enable_cycle_counter();
-
   let mut rcc = p.RCC.freeze(hal::rcc::Config::hsi().sysclk(84.MHz()));
 
-  let gpioc = p.GPIOC.split(&mut rcc);
-  let _led = gpioc.pc13.into_push_pull_output();
+  let gpioa = p.GPIOA.split(&mut rcc);
+
+  let mut leds = LedStrip::new(&mut rcc, gpioa.pa0, &p.TIM2, &p.DMA1);
+
+  const LEN: usize = 144;
+  const PIX: Pixel = Pixel { r: 0, g: 0, b: 8 };
 
   defmt::info!("cpu frequency: {} Hz", rcc.clocks.sysclk().raw());
   let mut sim = make_simulation();
@@ -122,6 +90,8 @@ fn main_2() -> ! {
   defmt::info!("w: {}, h: {}", sim.index.width(), sim.index.height());
 
   let mut cycle = cortex_m::peripheral::DWT::cycle_count();
+
+  let mut led = 0;
 
   loop {
     defmt::info!("tick start at {}", cycle);
@@ -166,7 +136,15 @@ fn main_2() -> ! {
 
     let separator = core::str::from_utf8(&[b'='; WORLD_WIDTH]).unwrap();
     defmt::println!("{}", separator);
+
+    led += 1;
+    if led >= LEN {
+      led = 0;
+    }
+
+    for i in 0..LEN {
+      leds.set(i, Pixel::BLACK);
+    }
+    leds.set(led, PIX);
   }
 }
-
-// End of file
