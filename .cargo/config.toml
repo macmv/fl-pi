@@ -16,6 +16,9 @@ rustflags = [
   #   uncomment the next line if you wish to enable it
   # "-Z", "trap-unreachable=no",
   "-C", "no-vectorize-loops",
+
+  "-C", "target-cpu=cortex-m4",
+  "-C", "target-feature=+vfp2"
 ]
 
 [build]
