@@ -110,9 +110,8 @@ fn main() -> ! {
 
     defmt::info!("accel: {:?}", imu.read_accel());
     let [ax, _, az] = imu.read_accel();
-    sim.gravity.x = ax as f32;
-    sim.gravity.y = -az as f32;
-    sim.gravity.normalize_mut();
+    sim.gravity.x = ax as f32 / 16000.0; // TODO: Figure out gravity constant
+    sim.gravity.y = -az as f32 / 16000.0;
 
     for it in density.iter_mut().flatten() {
       *it = 0.0;
